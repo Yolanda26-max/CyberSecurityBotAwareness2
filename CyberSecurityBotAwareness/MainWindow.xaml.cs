@@ -225,7 +225,7 @@ namespace CyberSecurityBotAwareness
                        "🔑 Encryption\n" +
                        "✌️ Two-Factor Authentication (2FA)\n" +
                        "💻 Hacking\n\n" +
-                       "Just type any topic and I'll share tips to keep you safe!";
+                       "Just type any topic and I'll shar tips to keep you safe!";
             }
 
             // Step 3 — Memory: store favourite topic
