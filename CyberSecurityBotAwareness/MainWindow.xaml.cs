@@ -32,7 +32,7 @@ namespace CyberSecurityBotAwareness
                 "Be cautious of unsolicited messages asking for personal information. Scammers often disguise themselves as trusted organisations!",
                 "If something sounds too good to be true, it probably is. Online scams often promise prizes or money.",
                 "Always verify the identity of anyone asking for money or personal details using official contact details.",
-                "Romance scams are on the rise — be cautious of people online who quickly ask for money or personal information."
+                "Romance scams are on the rise  be cautious of people online who quickly ask for money or personal information."
             }},
             { "privacy", new List<string> {
                 "Protect your privacy by reviewing app permissions regularly. Limit what personal information you share online.",
