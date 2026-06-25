@@ -151,7 +151,7 @@ namespace CyberSecurityBotAwareness
 
         private void TaskManagerButton_Click(object sender, RoutedEventArgs e)
         {
-            AddToActivityLog("User opened the Task Manager.");
+            AddToActivityLog("User opened the Task Manager");
             var taskWindow = new TaskManagerWindow(userName);
             taskWindow.Owner = this;
             taskWindow.ShowDialog();
