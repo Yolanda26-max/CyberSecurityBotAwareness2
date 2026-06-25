@@ -208,7 +208,7 @@ namespace CyberSecurityBotAwareness
                 if (!isCorrect) options[selectedIndex].Foreground = Brushes.Red;
 
                 FeedbackBorder.Visibility = Visibility.Visible;
-                SubmitNextButton.Content = "Next Question ➡️";
+                SubmitNextButton.Content = "Next Question ➡";
                 QuizStatus.Text = isCorrect ? "🎉 Well done!" : "Better luck next time!";
             }
             else
