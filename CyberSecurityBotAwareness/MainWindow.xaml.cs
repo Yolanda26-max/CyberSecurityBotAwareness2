@@ -7,17 +7,10 @@ using System.Windows.Media;
 
 namespace CyberSecurityBotAwareness
 {
-    /// <summary>
-    /// Cybersecurity Guardian Bot - Part 2
-    /// GUI-based chatbot with keyword recognition, memory, sentiment detection and random responses
-    /// Student: Nomhle Yolanda Makhanya
-    /// Student ID: ST10470578
-    /// </summary>
     public partial class MainWindow : Window
     {
         #region Fields
 
-        // Memory storage - remembers multiple user details throughout conversation
         private string userName = "";
         private string favouriteTopic = "";
         private string lastTopic = "";
@@ -25,25 +18,26 @@ namespace CyberSecurityBotAwareness
         private List<string> topicsDiscussed = new List<string>();
         private Random random = new Random();
 
-        // Keyword responses using Dictionary - multiple responses per topic for variety
+        public static List<string> ActivityLog = new List<string>();
+
         private Dictionary<string, List<string>> keywordResponses = new Dictionary<string, List<string>>()
         {
             { "password", new List<string> {
                 "Make sure to use strong, unique passwords for each account. Use a mix of uppercase, lowercase, numbers and symbols!",
-                "Consider using a password manager to keep track of your passwords safely. Never reuse the same password across multiple sites!",
+                "Consider using a password manager to keep track of your passwords safely. Never reuse the same password!",
                 "A strong password should be at least 12 characters long. Use a passphrase to make it memorable but secure.",
                 "Never share your passwords with anyone — legitimate services will never ask for your password!"
             }},
             { "scam", new List<string> {
                 "Be cautious of unsolicited messages asking for personal information. Scammers often disguise themselves as trusted organisations!",
-                "If something sounds too good to be true, it probably is. Online scams often promise prizes or money to get your attention.",
+                "If something sounds too good to be true, it probably is. Online scams often promise prizes or money.",
                 "Always verify the identity of anyone asking for money or personal details using official contact details.",
                 "Romance scams are on the rise — be cautious of people online who quickly ask for money or personal information."
             }},
             { "privacy", new List<string> {
                 "Protect your privacy by reviewing app permissions regularly. Limit what personal information you share online.",
                 "Use a VPN when connecting to public Wi-Fi to protect your personal data from being intercepted.",
-                "Regularly check your social media privacy settings. Oversharing personal details can make you a target for identity theft.",
+                "Regularly check your social media privacy settings. Oversharing details can make you a target for identity theft.",
                 "Be careful about what you post online — even deleted content can sometimes be recovered or screenshotted."
             }},
             { "phishing", new List<string> {
@@ -55,32 +49,14 @@ namespace CyberSecurityBotAwareness
             }},
             { "malware", new List<string> {
                 "Malware is malicious software designed to harm your device. Always keep your antivirus updated!",
-                "Ransomware locks your files and demands payment. Always back up your important files to an external drive or cloud.",
+                "Ransomware locks your files and demands payment. Always back up your important files to cloud storage.",
                 "Never download software from pop-up ads or unofficial websites. Only use trusted sources.",
                 "Keep your operating system updated — many updates contain important security patches against malware."
-            }},
-            { "ransomware", new List<string> {
-                "Ransomware encrypts your files and demands payment to restore them. Never pay the ransom — it doesn't guarantee recovery!",
-                "The best defence against ransomware is regular backups. Keep copies of your files on an external drive or cloud storage.",
-                "Ransomware often spreads through phishing emails. Never open attachments from unknown senders!",
-                "If infected with ransomware, disconnect from the internet immediately to prevent it from spreading to other devices."
-            }},
-            { "hacking", new List<string> {
-                "Hackers often exploit weak passwords and outdated software. Keep everything updated and use strong passwords!",
-                "Social engineering is a common hacking technique — hackers manipulate people into revealing confidential information.",
-                "Ethical hacking, also known as penetration testing, is used by organisations to find and fix security vulnerabilities.",
-                "Protect yourself from hacking by enabling 2FA, using strong passwords, and being cautious of suspicious links."
-            }},
-            { "identity theft", new List<string> {
-                "Identity theft occurs when someone steals your personal information to commit fraud. Monitor your accounts regularly!",
-                "Shred documents containing personal information before disposing of them to prevent identity theft.",
-                "Check your credit report regularly for any suspicious activity that could indicate identity theft.",
-                "Never share your ID number, banking details, or personal information on unsecured websites."
             }},
             { "virus", new List<string> {
                 "A virus can spread and damage your files. Run regular antivirus scans and avoid opening attachments from unknown senders.",
                 "Computer viruses can spread through USB drives. Always scan external devices before opening files.",
-                "Signs your device may be infected: slow performance, unexpected pop-ups, programs opening on their own."
+                "Signs of infection: slow performance, unexpected pop-ups, programs opening on their own. Run a full scan immediately."
             }},
             { "firewall", new List<string> {
                 "A firewall monitors and controls incoming and outgoing network traffic. Always keep your firewall enabled!",
@@ -93,7 +69,7 @@ namespace CyberSecurityBotAwareness
                 "A VPN hides your IP address, making it harder for websites and hackers to track your location."
             }},
             { "encryption", new List<string> {
-                "Encryption converts your data into a secure format that only authorised parties can read. Always use HTTPS when browsing.",
+                "Encryption converts your data into a secure format that only authorised parties can read. Always use HTTPS!",
                 "End-to-end encryption means only you and the recipient can read messages — look for apps that offer this.",
                 "Full disk encryption protects all data on your device if it's lost or stolen. Enable it in your security settings."
             }},
@@ -104,52 +80,63 @@ namespace CyberSecurityBotAwareness
             }}
         };
 
+        private Dictionary<string, string> nlpIntentMap = new Dictionary<string, string>()
+        {
+            { "add task", "add_task" },
+            { "create task", "add_task" },
+            { "new task", "add_task" },
+            { "add a task", "add_task" },
+            { "i need to", "add_task" },
+            { "remind me", "set_reminder" },
+            { "set a reminder", "set_reminder" },
+            { "set reminder", "set_reminder" },
+            { "don't let me forget", "set_reminder" },
+            { "quiz", "start_quiz" },
+            { "test me", "start_quiz" },
+            { "start quiz", "start_quiz" },
+            { "play game", "start_quiz" },
+            { "challenge me", "start_quiz" },
+            { "test my knowledge", "start_quiz" },
+            { "show activity log", "show_log" },
+            { "activity log", "show_log" },
+            { "what have you done", "show_log" },
+            { "show log", "show_log" },
+            { "recent actions", "show_log" },
+            { "show tasks", "open_tasks" },
+            { "my tasks", "open_tasks" },
+            { "view tasks", "open_tasks" },
+            { "task list", "open_tasks" },
+            { "manage tasks", "open_tasks" },
+        };
+
         #endregion
 
         #region Constructor
 
-        /// <summary>
-        /// Initialises the main window and displays welcome message
-        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
             ShowWelcomeMessage();
         }
 
-        /// <summary>
-        /// Displays the initial welcome message with ASCII art
-        /// </summary>
         private void ShowWelcomeMessage()
         {
-
-            AppendMessage("Guardian Bot", "Hello! I'm your Cybersecurity Guardian Bot 🛡️\nWhat's your name?", "#00FF41");
+            AppendMessage("Guardian Bot",
+                "Hello! I'm your Cybersecurity Guardian Bot 🛡️\n" +
+                "What's your name?", "#E91E8C");
         }
 
         #endregion
 
         #region Event Handlers
 
-        /// <summary>
-        /// Handles Send button click event
-        /// </summary>
-        private void SendButton_Click(object sender, RoutedEventArgs e)
-        {
-            ProcessInput();
-        }
+        private void SendButton_Click(object sender, RoutedEventArgs e) => ProcessInput();
 
-        /// <summary>
-        /// Handles Enter key press in the input box
-        /// </summary>
         private void UserInputBox_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
-                ProcessInput();
+            if (e.Key == Key.Enter) ProcessInput();
         }
 
-        /// <summary>
-        /// Clears chat and resets all memory when Clear button is clicked
-        /// </summary>
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
             ChatDisplay.Document.Blocks.Clear();
@@ -158,77 +145,74 @@ namespace CyberSecurityBotAwareness
             lastTopic = "";
             userConcern = "";
             topicsDiscussed.Clear();
-            StatusBar.Text = "🟢 Chat cleared. Type a message to begin.";
+            StatusBar.Text = "● Chat cleared. Type a message to begin.";
             ShowWelcomeMessage();
+        }
+
+        private void TaskManagerButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddToActivityLog("User opened the Task Manager.");
+            var taskWindow = new TaskManagerWindow(userName);
+            taskWindow.Owner = this;
+            taskWindow.ShowDialog();
+        }
+
+        private void QuizButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddToActivityLog("Quiz started via navigation button.");
+            var quizWindow = new QuizWindow(userName);
+            quizWindow.Owner = this;
+            quizWindow.ShowDialog();
+        }
+
+        private void ActivityLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            AppendMessage("Guardian Bot", ShowActivityLog(), "#E91E8C");
         }
 
         #endregion
 
         #region Input Processing
 
-        /// <summary>
-        /// Reads user input, displays it, and generates a bot response
-        /// </summary>
         private void ProcessInput()
         {
             string input = UserInputBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(input)) return;
 
-            // Display user message with timestamp
-            string timestamp = DateTime.Now.ToString("HH:mm");
-            AppendMessage($"You [{timestamp}]", input, "#58A6FF");
+            AppendMessage("You", input, "#58A6FF");
             UserInputBox.Clear();
 
-            // Generate and display bot response
             string response = GenerateResponse(input);
-            AppendMessage($"Guardian Bot [{timestamp}]", response, "#00FF41");
+            AppendMessage("Guardian Bot", response, "#E91E8C");
 
-            // Update status bar with user name if known
-            StatusBar.Text = string.IsNullOrEmpty(userName)
-                ? "🟢 Bot responded successfully."
-                : $"🟢 Chatting with {userName} | Topics covered: {topicsDiscussed.Count}";
+            StatusBar.Text = "● Bot responded successfully.";
         }
 
         #endregion
 
         #region Response Generation
 
-        /// <summary>
-        /// Generates a response based on user input
-        /// Checks name, memory, conversation flow, sentiment, and keywords in order
-        /// </summary>
         private string GenerateResponse(string input)
         {
             string lower = input.ToLower();
 
-            // Step 1 — Get user name first
             if (string.IsNullOrEmpty(userName))
             {
                 userName = input;
-                return $"Nice to meet you, {userName}! 😊 I'm here to help you stay safe online.\n\n" +
-                       $"You can ask me about: passwords, scams, privacy, phishing, malware, ransomware, hacking, identity theft, VPNs, firewalls, encryption, or 2FA.\n\n" +
-                       $"Type 'help' to see all available topics.\n\nWhat cybersecurity topic interests you most?";
+                AddToActivityLog($"User introduced themselves as '{userName}'.");
+                return $"Nice to meet you, {userName}! 😊\n\n" +
+                       $"You can ask me about: passwords, scams, privacy, phishing, malware, VPNs, firewalls, encryption, or 2FA.\n\n" +
+                       $"Use the buttons above to open the 📋 Task Manager or 🎮 Quiz!\n" +
+                       $"Type 'show activity log' to see recent actions.";
             }
 
-            // Step 2 — Help command: shows all available topics
-            if (lower == "help" || lower == "topics" || lower == "what can you do")
+            string intent = DetectIntent(lower);
+            if (intent != null)
             {
-                return $"Here are all the topics I can help you with, {userName}:\n\n" +
-                       "🔐 Passwords\n" +
-                       "🎣 Phishing\n" +
-                       "🦠 Malware & Viruses\n" +
-                       "💰 Ransomware\n" +
-                       "🔒 Privacy\n" +
-                       "🕵️ Scams & Identity Theft\n" +
-                       "🔥 Firewalls\n" +
-                       "🌐 VPNs\n" +
-                       "🔑 Encryption\n" +
-                       "✌️ Two-Factor Authentication (2FA)\n" +
-                       "💻 Hacking\n\n" +
-                       "Just type any topic and I'll shar tips to keep you safe!";
+                AddToActivityLog($"NLP detected intent '{intent}' from: \"{input}\"");
+                return HandleIntent(intent, input);
             }
 
-            // Step 3 — Memory: store favourite topic
             if (lower.Contains("interested in") || lower.Contains("i like") || lower.Contains("my favourite"))
             {
                 foreach (var keyword in keywordResponses.Keys)
@@ -238,90 +222,146 @@ namespace CyberSecurityBotAwareness
                         favouriteTopic = keyword;
                         lastTopic = keyword;
                         TrackTopic(keyword);
-                        return $"Great! I'll remember that you're interested in {keyword}, {userName}. " +
-                               $"It's crucial to stay safe online.\n\n{GetRandomResponse(keyword)}";
+                        AddToActivityLog($"User set favourite topic to '{keyword}'.");
+                        return $"Great! I'll remember that you're interested in {keyword}, {userName}.\n\n{GetRandomResponse(keyword)}";
                     }
                 }
             }
 
-            // Step 4 — Memory: store user concern
             if (lower.Contains("i am concerned") || lower.Contains("i'm concerned") || lower.Contains("my concern"))
             {
                 userConcern = input;
-                return $"I've noted your concern, {userName}. That's really important to address!\n\n" +
-                       (GenerateCybersecurityTip(lower) ?? "Ask me about a specific topic like phishing or passwords!");
+                string tip = GenerateCybersecurityTip(lower) ?? "Ask me about a specific topic like phishing or passwords!";
+                return $"I've noted your concern, {userName}. Let me share some tips!\n\n{tip}";
             }
 
-            // Step 5 — Memory recall: topics discussed
-            if (lower.Contains("what have we discussed") || lower.Contains("what did we talk about") || lower.Contains("topics we covered"))
+            if (lower.Contains("what have we discussed") || lower.Contains("what did we talk about"))
             {
                 if (topicsDiscussed.Count > 0)
-                    return $"We've discussed the following topics so far, {userName}:\n{string.Join("\n", topicsDiscussed)}\n\nWould you like to explore any of these further?";
+                    return $"We've discussed: {string.Join(", ", topicsDiscussed)}. Would you like to explore any further, {userName}?";
                 return $"We haven't discussed any specific topics yet, {userName}. Ask me about passwords, phishing, or malware!";
             }
 
-            // Step 6 — Conversation flow: follow up requests
             if (lower.Contains("tell me more") || lower.Contains("explain more") ||
-                lower.Contains("another tip") || lower.Contains("more info") ||
-                lower.Contains("give me another"))
+                lower.Contains("another tip") || lower.Contains("more info"))
             {
                 if (!string.IsNullOrEmpty(lastTopic))
                     return $"Here's another tip about {lastTopic}, {userName}:\n\n{GetRandomResponse(lastTopic)}";
-                return $"What topic would you like to know more about, {userName}? Type 'help' to see all topics!";
+                return $"What topic would you like to know more about, {userName}?";
             }
 
-            // Step 7 — Sentiment detection: worried/scared/overwhelmed
-            if (lower.Contains("worried") || lower.Contains("scared") || lower.Contains("anxious") ||
-                lower.Contains("nervous") || lower.Contains("overwhelmed") || lower.Contains("afraid"))
+            if (lower.Contains("worried") || lower.Contains("scared") ||
+                lower.Contains("anxious") || lower.Contains("nervous"))
             {
                 string tip = GenerateCybersecurityTip(lower);
-                return $"It's completely understandable to feel that way, {userName}. " +
-                       $"Cybersecurity can feel overwhelming, but I'm here to help! 💪\n\n" +
-                       (tip ?? "Let me know what specific topic is worrying you and I'll share some tips!");
+                return $"It's completely understandable to feel that way, {userName}. I'm here to help! 💪\n\n" +
+                       (tip ?? "Let me know what specific topic is worrying you!");
             }
 
-            // Step 8 — Sentiment detection: frustrated/confused
-            if (lower.Contains("frustrated") || lower.Contains("confused") ||
-                lower.Contains("don't understand") || lower.Contains("difficult") || lower.Contains("hard"))
-            {
-                return $"No worries at all, {userName}! Let's take it step by step 😊. " +
-                       $"Which topic are you finding confusing? Type 'help' to see all available topics!";
-            }
+            if (lower.Contains("frustrated") || lower.Contains("confused") || lower.Contains("don't understand"))
+                return $"No worries, {userName}! Let's take it step by step 😊. Which topic are you finding confusing?";
 
-            // Step 9 — Sentiment detection: happy/excited/curious
-            if (lower.Contains("happy") || lower.Contains("great") || lower.Contains("awesome") ||
-                lower.Contains("curious") || lower.Contains("interesting") || lower.Contains("excited"))
-            {
-                return $"Love the positive energy, {userName}! 🌟 Cybersecurity is a fascinating field. " +
-                       $"Ask me about any topic and I'll share what I know! Type 'help' to see all topics.";
-            }
+            if (lower.Contains("curious") || lower.Contains("interesting") || lower.Contains("want to know"))
+                return $"Love the curiosity, {userName}! 🔍 Ask me about any cybersecurity topic!";
 
-            // Step 10 — Keyword recognition
             string keywordResponse = GenerateCybersecurityTip(lower);
-            if (keywordResponse != null)
-                return keywordResponse;
+            if (keywordResponse != null) return keywordResponse;
 
-            // Step 11 — Greetings
             if (lower.Contains("hello") || lower.Contains("hi") || lower.Contains("hey"))
-                return $"Hey there, {userName}! 👋 How can I help you stay safe online today? Type 'help' to see all topics!";
-
+                return $"Hey there, {userName}! 👋 How can I help you stay safe online today?";
             if (lower.Contains("thank"))
-                return $"You're welcome, {userName}! Stay safe out there 🛡️. Feel free to ask anything else!";
-
+                return $"You're welcome, {userName}! Stay safe out there 🛡️";
             if (lower.Contains("bye") || lower.Contains("goodbye"))
-                return $"Goodbye, {userName}! Stay cyber-safe! 🛡️ Remember to keep your passwords strong and stay alert online.";
-
+                return $"Goodbye, {userName}! Stay cyber-safe! 🛡️";
             if (lower.Contains("how are you"))
-                return $"I'm running smoothly and ready to help, {userName}! 😄 What cybersecurity topic can I help you with today?";
+                return $"I'm running smoothly and ready to help, {userName}! 😄";
 
-            // Step 12 — Default error handling for unrecognised input
-            return $"I'm not sure I understand that, {userName}. Can you try rephrasing? 🤔\n\n" +
-                   $"Type 'help' to see all available topics I can assist you with!";
+            return $"I didn't quite understand that, {userName}. Could you rephrase? 🤔\n\n" +
+                   $"Try asking about: passwords, scams, privacy, phishing, malware, VPNs, firewalls, encryption, or 2FA.\n" +
+                   $"Or type 'show activity log', 'start quiz', or 'add task'.";
         }
 
-        /// <summary>
-        /// Searches user input for cybersecurity keywords and returns a random matching response
-        /// </summary>
+        #endregion
+
+        #region NLP Intent Detection
+
+        private string DetectIntent(string lower)
+        {
+            foreach (var entry in nlpIntentMap)
+                if (lower.Contains(entry.Key)) return entry.Value;
+            return null;
+        }
+
+        private string HandleIntent(string intent, string originalInput)
+        {
+            switch (intent)
+            {
+                case "add_task":
+                    OpenTaskManager();
+                    return $"It sounds like you want to add a task, {userName}! I've opened the Task Manager for you.";
+                case "set_reminder":
+                    OpenTaskManager();
+                    return $"Sure, {userName}! I've opened the Task Manager where you can set a reminder.";
+                case "start_quiz":
+                    OpenQuiz();
+                    return $"Great idea, {userName}! Opening the quiz now — good luck! 🎮";
+                case "show_log":
+                    return ShowActivityLog();
+                case "open_tasks":
+                    OpenTaskManager();
+                    return $"Opening the Task Manager for you, {userName}! 📋";
+                default:
+                    return null;
+            }
+        }
+
+        private void OpenTaskManager()
+        {
+            AddToActivityLog("Task Manager opened via NLP command.");
+            var taskWindow = new TaskManagerWindow(userName);
+            taskWindow.Owner = this;
+            taskWindow.ShowDialog();
+        }
+
+        private void OpenQuiz()
+        {
+            AddToActivityLog("Quiz started via NLP command.");
+            var quizWindow = new QuizWindow(userName);
+            quizWindow.Owner = this;
+            quizWindow.ShowDialog();
+        }
+
+        #endregion
+
+        #region Activity Log
+
+        public static void AddToActivityLog(string action)
+        {
+            ActivityLog.Add($"[{DateTime.Now:HH:mm:ss}] {action}");
+        }
+
+        private string ShowActivityLog()
+        {
+            if (ActivityLog.Count == 0)
+                return $"No actions recorded yet, {userName}. Start chatting, add tasks, or take the quiz!";
+
+            int start = Math.Max(0, ActivityLog.Count - 10);
+            var recent = ActivityLog.GetRange(start, ActivityLog.Count - start);
+
+            string log = $"Here's a summary of recent actions, {userName}:\n\n";
+            for (int i = 0; i < recent.Count; i++)
+                log += $"{i + 1}. {recent[i]}\n";
+
+            if (ActivityLog.Count > 10)
+                log += $"\n(Showing last 10 of {ActivityLog.Count} total actions)";
+
+            return log;
+        }
+
+        #endregion
+
+        #region Cybersecurity Tip Helpers
+
         private string GenerateCybersecurityTip(string lower)
         {
             foreach (var keyword in keywordResponses.Keys)
@@ -330,10 +370,10 @@ namespace CyberSecurityBotAwareness
                 {
                     lastTopic = keyword;
                     TrackTopic(keyword);
+                    AddToActivityLog($"User asked about '{keyword}'.");
 
-                    // Personalise response if it matches their favourite topic
                     if (!string.IsNullOrEmpty(favouriteTopic) && keyword == favouriteTopic)
-                        return $"Since {keyword} is your favourite topic, {userName}, here's a detailed tip:\n\n{GetRandomResponse(keyword)}";
+                        return $"Since {keyword} is your favourite topic, {userName}, here's a tip:\n\n{GetRandomResponse(keyword)}";
 
                     return GetRandomResponse(keyword);
                 }
@@ -341,10 +381,6 @@ namespace CyberSecurityBotAwareness
             return null;
         }
 
-        /// <summary>
-        /// Returns a random response from the list for a given keyword
-        /// Uses List and Random for varied, engaging responses
-        /// </summary>
         private string GetRandomResponse(string keyword)
         {
             if (keywordResponses.ContainsKey(keyword))
@@ -355,9 +391,6 @@ namespace CyberSecurityBotAwareness
             return "I don't have information on that topic yet.";
         }
 
-        /// <summary>
-        /// Tracks topics discussed in the conversation for memory recall feature
-        /// </summary>
         private void TrackTopic(string topic)
         {
             if (!topicsDiscussed.Contains(topic))
@@ -368,9 +401,6 @@ namespace CyberSecurityBotAwareness
 
         #region UI Helpers
 
-        /// <summary>
-        /// Appends a colour coded message to the chat display with sender name
-        /// </summary>
         private void AppendMessage(string sender, string message, string colorHex)
         {
             var paragraph = new Paragraph();
@@ -390,7 +420,6 @@ namespace CyberSecurityBotAwareness
             paragraph.Inlines.Add(senderRun);
             paragraph.Inlines.Add(messageRun);
             ChatDisplay.Document.Blocks.Add(paragraph);
-
             ChatScrollViewer.ScrollToBottom();
         }
 
